@@ -38,6 +38,16 @@ trait Geom2D {
 
   object Implicits {
 
+    implicit def tuple2pixel(t: (Long, Long)): Pixel = {
+      val (x, y) = t
+      Pixel(x, y)
+    }
+
+    implicit def tuple2point(t: (Double, Double)): Point = {
+      val (x, y) = t
+      Point(x, y)
+    }
+
     implicit def real2pixel(p: Point)(implicit scale: Scale): Pixel = {
       import scale._
       import p._
@@ -78,9 +88,9 @@ trait Geom2D {
 
 }
 
-object FractalApp extends JSApp {
+object FractalApp extends JSApp with Geom2D {
 
-  def addCanvas(h: Int, w: Int): HTMLCanvasElement = {
+  def addCanvas(h: Long, w: Long): HTMLCanvasElement = {
     val canvas = document.createElement("canvas").asInstanceOf[HTMLCanvasElement]
     canvas.setAttribute("height",  h toString)
     canvas.setAttribute("width",  w toString)
@@ -89,7 +99,19 @@ object FractalApp extends JSApp {
   }
 
   def main(): Unit = {
-    println("hi")
+
+    import Implicits._
+
+    val drawingAreaSize = (800L, 600L)
+
+    val drawingAreaFrame = PixelFrame(0L -> drawingAreaSize._1, 0L -> drawingAreaSize._2)
+
+    val mandelbrotComplexRange = RealFrame(-2.5 -> 1.0, -1.0 -> 1.0)
+
+    implicit val scale: Scale = Scale(mandelbrotComplexRange, drawingAreaFrame)
+
+    ((addCanvas(_, _)).tupled)(drawingAreaSize)
+
   }
 
 }
