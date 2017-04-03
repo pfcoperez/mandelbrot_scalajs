@@ -6,7 +6,7 @@ import org.scalajs.dom
 import dom.document
 import dom.raw.HTMLCanvasElement
 
-trait Geom2D {
+object Geom2D {
 
   trait Vector[T] { val x: T; val y: T }
 
@@ -88,7 +88,22 @@ trait Geom2D {
 
 }
 
-object FractalApp extends JSApp with Geom2D {
+object MandelbrotCalc {
+
+  def iteration(
+    x0: Double, y0: Double)(
+    x: Double, y: Double)(n: Long): Option[Long] = {
+
+    if(x*x + y*y >= 4.0) None //Ecape condition
+    else 
+
+  }
+
+}
+
+object FractalApp extends JSApp {
+
+  import Geom2D._
 
   def addCanvas(h: Long, w: Long): HTMLCanvasElement = {
     val canvas = document.createElement("canvas").asInstanceOf[HTMLCanvasElement]
