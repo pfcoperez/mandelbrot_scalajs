@@ -6,7 +6,7 @@ import org.scalajs.dom
 import dom.document
 import dom.raw.HTMLCanvasElement
 
-trait Geom2D {
+object Geom2D {
 
   trait Vector[T] { val x: T; val y: T }
 
@@ -52,7 +52,7 @@ trait Geom2D {
       import scale._
       import p._
 
-      require(realFrame contains p)
+      require(realFrame contains p, s"$p out of $realFrame")
 
       val (pxMin, pxMax) = pixelFrame.xRange
       val (pyMin, pyMax) = pixelFrame.yRange
@@ -70,7 +70,7 @@ trait Geom2D {
       import scale._
       import p.{x => px, y => py}
 
-      require(pixelFrame contains p)
+      require(pixelFrame contains p, s"$p out of $PixelFrame")
 
       val (pxMin, pxMax) = pixelFrame.xRange
       val (pyMin, pyMax) = pixelFrame.yRange
@@ -88,29 +88,68 @@ trait Geom2D {
 
 }
 
-object FractalApp extends JSApp with Geom2D {
+object MandelbrotSet {
+
+  def iteration(
+    zeroth: (Double, Double)
+  )(
+    xy: (Double, Double)
+  )(n: Long): (Option[(Double, Double)], Long) = {
+    val (x, y) = xy
+    val (x0, y0) = zeroth
+
+    if(x*x + y*y >= 4.0) None -> n
+    else iteration(zeroth)((x*x - y*y + x0, 2.0*x*y+y0))(n+1L)
+  }
+
+}
+
+object FractalApp extends JSApp {
+
+  import Geom2D._
 
   def addCanvas(h: Long, w: Long): HTMLCanvasElement = {
-    val canvas = document.createElement("canvas").asInstanceOf[HTMLCanvasElement]
+    val canvas =
+      document.createElement("canvas").asInstanceOf[HTMLCanvasElement]
     canvas.setAttribute("height",  h toString)
     canvas.setAttribute("width",  w toString)
     document.body.appendChild(canvas)
     canvas
   }
 
+
+
+
   def main(): Unit = {
 
-    import Implicits._
+    import Geom2D.Implicits._
 
     val drawingAreaSize = (800L, 600L)
 
-    val drawingAreaFrame = PixelFrame(0L -> drawingAreaSize._1, 0L -> drawingAreaSize._2)
+    val drawingAreaFrame = PixelFrame(
+      0L -> 0L,
+      drawingAreaSize
+    )
 
-    val mandelbrotComplexRange = RealFrame(-2.5 -> 1.0, -1.0 -> 1.0)
+    val mandelbrotComplexRange = RealFrame(-2.5 -> -1.0, 1.0 -> 1.0)
 
     implicit val scale: Scale = Scale(mandelbrotComplexRange, drawingAreaFrame)
 
-    ((addCanvas(_, _)).tupled)(drawingAreaSize)
+    val renderer = ((addCanvas(_, _)).tupled)(drawingAreaSize).
+      getContext("2d").
+      asInstanceOf[dom.CanvasRenderingContext2D]
+
+    def drawPoint(point: Point, color: String)(implicit scale: Scale): Unit = {
+      renderer.fillStyle = color
+      val pixel: Pixel = point
+      import pixel._
+      renderer.fillRect(x.toDouble, y.toDouble, 1.0, 1.0)
+    }
+
+    for(x <- -100 to 100) {
+      drawPoint(Point(x/100.0, x/100.0), "black")
+    }
+
 
   }
 
