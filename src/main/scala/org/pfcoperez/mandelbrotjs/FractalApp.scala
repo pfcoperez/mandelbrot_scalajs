@@ -60,8 +60,8 @@ object Geom2D {
       val (xMin, xMax) = realFrame.xRange
       val (yMin, yMax) = realFrame.yRange
 
-      val px = pxMin + ((pxMax-pxMin)*x/(xMax-xMin)).toLong
-      val py = pyMin + ((pyMax-pyMin)*y/(yMax-yMin)).toLong
+      val px = pxMin + ((pxMax-pxMin)*(x-xMin)/(xMax-xMin)).toLong
+      val py = pyMin + ((pyMax-pyMin)*(y-yMin)/(yMax-yMin)).toLong
 
       Pixel(px, py)
     }
@@ -78,8 +78,8 @@ object Geom2D {
       val (xMin, xMax) = realFrame.xRange
       val (yMin, yMax) = realFrame.yRange
 
-      val x = xMin + (xMax-xMin)*(px.toDouble/(pxMax-pxMin))
-      val y = yMin + (yMax-yMin)*(py.toDouble/(pyMax-pyMin))
+      val x = xMin + (xMax-xMin)*((px.toDouble-pxMin)/(pxMax-pxMin))
+      val y = yMin + (yMax-yMin)*((py.toDouble-pyMin)/(pyMax-pyMin))
 
       Point(x, y)
     }
@@ -108,7 +108,7 @@ object FractalApp extends JSApp {
 
   import Geom2D._
 
-  def addCanvas(h: Long, w: Long): HTMLCanvasElement = {
+  def addCanvas(w: Long, h: Long): HTMLCanvasElement = {
     val canvas =
       document.createElement("canvas").asInstanceOf[HTMLCanvasElement]
     canvas.setAttribute("height",  h toString)
@@ -139,15 +139,17 @@ object FractalApp extends JSApp {
       getContext("2d").
       asInstanceOf[dom.CanvasRenderingContext2D]
 
-    def drawPoint(point: Point, color: String)(implicit scale: Scale): Unit = {
+    def drawPixel(pixel: Pixel, color: String): Unit = {
       renderer.fillStyle = color
-      val pixel: Pixel = point
       import pixel._
-      renderer.fillRect(x.toDouble, y.toDouble, 1.0, 1.0)
+      renderer.fillRect(x, y, 1, 1)
     }
 
-    for(x <- -100 to 100) {
-      drawPoint(Point(x/100.0, x/100.0), "black")
+    def drawPoint(point: Point, color: String)(implicit scale: Scale): Unit =
+      drawPixel(point, color)
+
+    for(x <- 0L to 800L; y <- 0L to 600L) {
+      drawPixel(x -> y, "red")
     }
 
 
