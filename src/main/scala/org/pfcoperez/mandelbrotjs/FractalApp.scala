@@ -8,7 +8,7 @@ import dom.raw.HTMLCanvasElement
 
 object Geom2D {
 
-  trait Vector[T] { val x: T; val y: T }
+  trait Vector[T] { val x: T; val y: T; def tuple: (T,T) = x -> y }
 
   case class Pixel(x: Long, y: Long) extends Vector[Long]
   case class Point(x: Double, y: Double) extends Vector[Double]
@@ -94,12 +94,33 @@ object MandelbrotSet {
     zeroth: (Double, Double)
   )(
     xy: (Double, Double)
-  )(n: Long): (Option[(Double, Double)], Long) = {
+  ): Option[(Double, Double)] = {
     val (x, y) = xy
     val (x0, y0) = zeroth
+    
+    if(x*x + y*y >= 4.0) None
+    else Some((x*x - y*y + x0, 2.0*x*y+y0))
+  }
 
-    if(x*x + y*y >= 4.0) None -> n
-    else iteration(zeroth)((x*x - y*y + x0, 2.0*x*y+y0))(n+1L)
+  def numericExploration(
+                          zeroth: (Double, Double),
+                          nIterations: Int,
+                          prevSt: Option[((Double, Double), Int)] = None
+                        ): (Option[(Double, Double)], Int) = {
+
+    val (prevPoint, prevIterations) = prevSt.getOrElse((0.0, 0.0) -> 0)
+
+    def numericExploration(current: (Double, Double), it: Int): (
+        Option[(Double, Double)], Int
+      ) =
+      if(it == nIterations) (Some(current), prevIterations+it)
+      else iteration(zeroth)(current) match {
+        case Some(p) => numericExploration(p, it+1)
+        case _ => (None, prevIterations+it)
+      }
+
+    numericExploration(prevPoint, 0)
+
   }
 
 }
@@ -117,12 +138,10 @@ object FractalApp extends JSApp {
     canvas
   }
 
-
-
-
   def main(): Unit = {
 
     import Geom2D.Implicits._
+    import MandelbrotSet._
 
     val drawingAreaSize = (800L, 600L)
 
@@ -149,9 +168,12 @@ object FractalApp extends JSApp {
       drawPixel(point, color)
 
     for(x <- 0L to 800L; y <- 0L to 600L) {
-      drawPixel(x -> y, "red")
+      val point: Point = Pixel(x, y)
+      val (st: Option[(Double, Double)], _) = numericExploration(point.tuple, 1000)
+      st.foreach { _ =>
+        drawPixel(x -> y, "black")
+      }
     }
-
 
   }
 
