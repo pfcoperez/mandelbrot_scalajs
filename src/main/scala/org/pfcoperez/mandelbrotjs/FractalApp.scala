@@ -150,7 +150,7 @@ object FractalApp extends JSApp {
       drawingAreaSize
     )
 
-    val mandelbrotComplexRange = RealFrame(-0.25 -> -1.0, 0.125 -> -0.5)
+    val mandelbrotComplexRange = RealFrame(-2.5 -> -1.0, 1.0 -> 1.0)
 
     implicit val scale: Scale = Scale(mandelbrotComplexRange, drawingAreaFrame)
 
@@ -179,9 +179,9 @@ object FractalApp extends JSApp {
       val (st: Option[(Double, Double)], nIterations) = numericExploration(point.tuple, maxDepth)
       val color = st map { _ => 
         "black" /* Hasn't escaped within the exploration limit, 
-                   it is estimated tha it forms part of the set */
+                   it is estimated that it forms part of the set */
       } getOrElse {
-        //Has escaped, therefore it is part of the set
+        //Has escaped, therefore it is NOT part of the set for sure.
         colorPalette(nIterations)
       }
       drawPixel(x -> y, color)
