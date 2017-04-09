@@ -86,6 +86,19 @@ object Geom2D {
 
   }
 
+  def sector(p: Pixel, sectorSize: (Long, Long))(frame: PixelFrame): Long = {
+    val w: Long = {
+      val (xMin, xMax) = frame.xRange
+      xMax - xMin + 1
+    }
+    
+    val (sw, sh) = sectorSize
+    val (x, y) = p.tuple
+
+    y/sh * w/sw + x/sw
+
+  }
+
 }
 
 object MandelbrotSet {
@@ -143,7 +156,7 @@ object FractalApp extends JSApp {
     import Geom2D.Implicits._
     import MandelbrotSet._
 
-    val drawingAreaSize = (800L, 600L)
+    val drawingAreaSize = (400L, 300L)
 
     val drawingAreaFrame = PixelFrame(
       0L -> 0L,
@@ -172,13 +185,6 @@ object FractalApp extends JSApp {
     }
 
     def discretePalette(n: Int): String = {
-      /*val colors = Array(
-      "#582A72",
-      "#9775AA",
-      "#764B8E",
-      "#3D1255",
-      "#260339"
-      )*/
       val colors = Array(
         "#226666",
         "#669999",
@@ -207,14 +213,16 @@ object FractalApp extends JSApp {
     } {
       val point: Point = Pixel(x, y)
       val (st: Option[(Double, Double)], nIterations) = numericExploration(point.tuple, maxDepth)
-      val color = st map { _ => 
+      /*val color = st map { _ =>
         "black" /* Hasn't escaped within the exploration limit, 
                    it is estimated that it forms part of the set */
       } getOrElse {
         //Has escaped, therefore it is NOT part of the set for sure.
         //colorPalette(nIterations, maxDepth)
         discretePalette(nIterations)
-      }
+      }*/
+      val color =
+        discretePalette(sector(x -> y, 100L -> 100L)(scale.pixelFrame).toInt)
       drawPixel(x -> y, color)
     }
 
