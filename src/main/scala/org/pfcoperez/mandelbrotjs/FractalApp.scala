@@ -171,6 +171,34 @@ object FractalApp extends JSApp {
       "#" + ((0xffffff*((n+maxV/10)%maxV).toDouble/maxV.toDouble).toInt).toHexString.takeRight(6)
     }
 
+    def discretePalette(n: Int): String = {
+      /*val colors = Array(
+      "#582A72",
+      "#9775AA",
+      "#764B8E",
+      "#3D1255",
+      "#260339"
+      )*/
+      val colors = Array(
+        "#226666",
+        "#669999",
+        "#407F7F",
+        "#0D4D4D",
+        "#003333",
+        "#2E4272",
+        "#7887AB",
+        "#4F628E",
+        "#162955",
+        "#061539",
+        "#2D882D",
+        "#88CC88",
+        "#55AA55",
+        "#116611",
+        "#004400"
+      )
+      colors(n % colors.size)
+    }
+
     val maxDepth = 1000
 
     for {
@@ -184,7 +212,8 @@ object FractalApp extends JSApp {
                    it is estimated that it forms part of the set */
       } getOrElse {
         //Has escaped, therefore it is NOT part of the set for sure.
-        colorPalette(nIterations, maxDepth)
+        //colorPalette(nIterations, maxDepth)
+        discretePalette(nIterations)
       }
       drawPixel(x -> y, color)
     }
