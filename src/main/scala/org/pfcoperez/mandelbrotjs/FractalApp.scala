@@ -167,14 +167,16 @@ object FractalApp extends JSApp {
     def drawPoint(point: Point, color: String)(implicit scale: Scale): Unit =
       drawPixel(point, color)
 
-    def colorPalette(n: Int, offset: Int = 0): String = {
-      val cv = n + offset
-      s"#${cv%(256*256*256)}${cv%(256*256)}${cv%256}"
+    def colorPalette(n: Int, maxV: Int): String = {
+      "#" + ((0xffffff*((n+maxV/10)%maxV).toDouble/maxV.toDouble).toInt).toHexString.takeRight(6)
     }
 
     val maxDepth = 1000
 
-    for(x <- 0L to 800L; y <- 0L to 600L) {
+    for {
+      x <- 0L to drawingAreaSize._1
+      y <- 0L to drawingAreaSize._2
+    } {
       val point: Point = Pixel(x, y)
       val (st: Option[(Double, Double)], nIterations) = numericExploration(point.tuple, maxDepth)
       val color = st map { _ => 
@@ -182,7 +184,7 @@ object FractalApp extends JSApp {
                    it is estimated that it forms part of the set */
       } getOrElse {
         //Has escaped, therefore it is NOT part of the set for sure.
-        colorPalette(nIterations)
+        colorPalette(nIterations, maxDepth)
       }
       drawPixel(x -> y, color)
     }
